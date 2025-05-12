@@ -3,11 +3,13 @@ from decimal import Decimal
 from typing import List, Tuple
 from pydantic import BaseModel, ConfigDict
 
+from uniswap_v3_backtester.algo.math import compute_token1_for_fixed_token0
 from uniswap_v3_backtester.algo.pool import Position, Swap, SwapSeries
 from uniswap_v3_backtester.algo.activity import ActivityTracker, ActivityTimeseries
 from uniswap_v3_backtester.algo.fees import FeeCalculator, FeeTimeseries
 from uniswap_v3_backtester.algo.Impermanent_Loss import ImpermanentLossTracker, ILTimeseries
 from uniswap_v3_backtester.algo.apr import APRTracker, APRTimeseries
+from uniswap_v3_backtester.algo.rebalancer import RebalanceEvent, RebalancerContext, RebalancingStrategy
 
 
 class PositionSimulationContext(BaseModel):
@@ -18,6 +20,7 @@ class PositionSimulationContext(BaseModel):
     calculator: FeeCalculator
     il_tracker: ImpermanentLossTracker | None = None
     apr_tracker: APRTracker | None = None
+    rebalancer: RebalancingStrategy | None = None
 
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
@@ -35,6 +38,7 @@ class BacktestResult(BaseModel):
     swap_ticks: List[Tuple[datetime, int]]
     initial_tick_lower: int
     initial_tick_upper: int
+    rebalancing_events: List[RebalanceEvent]
 
     @classmethod
     def from_simulation(
@@ -43,6 +47,7 @@ class BacktestResult(BaseModel):
         apr_series: APRTimeseries,
         token_balances: List[Tuple[datetime, Decimal, Decimal]],
         token_composition: List[Tuple[datetime, Decimal, Decimal]],
+        rebalancing_events: List[RebalanceEvent]
     ):
         return cls(
             total_fees_token0=context.calculator.get_total_fees().token0,
@@ -57,6 +62,7 @@ class BacktestResult(BaseModel):
             swap_ticks=[(swap.timestamp, swap.tick) for swap in context.swap_series.swaps],
             initial_tick_lower=context.position.tick_lower,
             initial_tick_upper=context.position.tick_upper,
+            rebalancing_events=rebalancing_events
         )
 
 
@@ -72,6 +78,7 @@ class GlobalClockBacktestRunner:
         self.token_balances = [[] for _ in contexts]
         self.token_compositions = [[] for _ in contexts]
         self.tick_contexts = [{} for _ in contexts]
+        self.rebalance_events = [[] for _ in contexts]
 
     def run(self) -> BacktestOutput:
         for t in self.global_timestamps:
@@ -91,6 +98,33 @@ class GlobalClockBacktestRunner:
         self.token_compositions[i].append((timestamp, position.amount0, position.amount1))
 
         tracker.track(swap)
+
+        rebalancer = context.rebalancer
+
+        if rebalancer:
+            rebalance_context = RebalancerContext(
+                tick=swap.tick,
+                timestamp=timestamp,
+                tick_lower=position.tick_lower,
+                tick_upper=position.tick_upper,
+                created_at=context.created_at
+            )
+
+            if rebalancer.should_rebalance(rebalance_context):
+                new_lower, new_upper = rebalancer.rebalance(rebalance_context, bias=0.5)
+                width = new_upper - new_lower
+
+                # Recompute position
+                L, new_amount1 = compute_token1_for_fixed_token0(position.amount0, new_lower, new_upper, swap.tick)
+
+                # Replace the position
+                position.tick_lower = new_lower
+                position.tick_upper = new_upper
+                position.amount1 = new_amount1
+                rebalance_event = rebalancer.get_event_at(timestamp)
+                if rebalance_event:
+                    self.rebalance_events[i].append(rebalance_event)
+
         is_active = tracker.is_active(swap.tick)
         calculator.track(swap, is_active)
         if il_tracker:
@@ -118,13 +152,6 @@ class GlobalClockBacktestRunner:
             apr_tracker = context.apr_tracker
 
             if apr_tracker:
-                # Step 1: Feed IL to APR tracker
-                il_data = list(zip(
-                    context.il_tracker.get_il_series().timestamps,
-                    context.il_tracker.get_il_series().values,
-                )) if context.il_tracker else []
-
-                # Step 2: Generate APR on daily basis
                 daily_dates = sorted({datetime(ts.year, ts.month, ts.day) for ts in self.global_timestamps})
                 apr_series = apr_tracker.compute_apr_on_dates(daily_dates)
             else:
@@ -136,6 +163,7 @@ class GlobalClockBacktestRunner:
                     apr_series=apr_series,
                     token_balances=self.token_balances[i],
                     token_composition=self.token_compositions[i],
+                    rebalancing_events=self.rebalance_events[i]
                 )
             )
 

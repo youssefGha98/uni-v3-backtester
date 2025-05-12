@@ -1,7 +1,6 @@
 from matplotlib import pyplot as plt
 from uniswap_v3_backtester.algo.backtester import BacktestResult
 
-
 def plot_position_evolution(result: BacktestResult) -> None:
     # Unpack token balances
     timestamps, token0s, token1s = zip(*result.token_balance_series)
@@ -33,8 +32,6 @@ def plot_position_evolution(result: BacktestResult) -> None:
 
     # --- [0] Tick Evolution ---
     axs[0].plot(tick_times, ticks, label="Current Tick", color="black")
-    axs[0].axhline(result.initial_tick_lower, color="red", linestyle="--", label="Tick Lower")
-    axs[0].axhline(result.initial_tick_upper, color="green", linestyle="--", label="Tick Upper")
     axs[0].set_ylabel("Tick")
     axs[0].legend()
     axs[0].grid(True)
@@ -47,6 +44,23 @@ def plot_position_evolution(result: BacktestResult) -> None:
     ):
         color = "green" if active else "red"
         axs[0].axvspan(t0, t1, color=color, alpha=0.2)
+
+    # Tick bounds per active range
+    rebalance_times = [event.timestamp for event in result.rebalancing_events]
+    rebalance_ranges = list(zip(
+        [result.token_balance_series[0][0]] + rebalance_times,
+        rebalance_times + [result.token_balance_series[-1][0]]
+    ))
+    tick_lowers = [result.initial_tick_lower] + [e.new_tick_lower for e in result.rebalancing_events]
+    tick_uppers = [result.initial_tick_upper] + [e.new_tick_upper for e in result.rebalancing_events]
+
+    for (start, end), lower, upper in zip(rebalance_ranges, tick_lowers, tick_uppers):
+        axs[0].plot([start, end], [lower, lower], linestyle="--", color="red", alpha=0.6, label="Tick Lower" if start == rebalance_ranges[0][0] else "")
+        axs[0].plot([start, end], [upper, upper], linestyle="--", color="green", alpha=0.6, label="Tick Upper" if start == rebalance_ranges[0][0] else "")
+
+    # Add rebalance markers
+    for i, event in enumerate(result.rebalancing_events):
+        axs[0].axvline(event.timestamp, color="purple", linestyle="--", label="Rebalanced" if i == 0 else "")
 
     # --- [1] Token0 and Token1 Balances ---
     ax1 = axs[1]
