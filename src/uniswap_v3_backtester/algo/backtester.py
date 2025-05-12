@@ -122,6 +122,15 @@ class GlobalClockBacktestRunner:
                 position.tick_upper = new_upper
                 position.amount1 = new_amount1
                 rebalance_event = rebalancer.get_event_at(timestamp)
+
+                if context.apr_tracker:
+                    context.apr_tracker = APRTracker(
+                        initial_token0=position.amount0,
+                        initial_token1=position.amount1,
+                        initial_tick=swap.tick,
+                        token0_decimals=context.apr_tracker.token0_decimals,
+                        token1_decimals=context.apr_tracker.token1_decimals
+                    )
                 if rebalance_event:
                     self.rebalance_events[i].append(rebalance_event)
 
