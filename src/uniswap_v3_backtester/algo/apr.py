@@ -1,10 +1,10 @@
 from datetime import datetime
 from decimal import Decimal, getcontext
-from collections import defaultdict
-from typing import List, Tuple, Dict
+from typing import Dict, List, Tuple
+
 from pydantic import BaseModel
 
-from uniswap_v3_backtester.algo.math import sqrtPriceX96_to_price_adjusted, tick_to_price
+from uniswap_v3_backtester.algo.math import sqrtPriceX96_to_price_adjusted
 
 getcontext().prec = 40  # High precision
 

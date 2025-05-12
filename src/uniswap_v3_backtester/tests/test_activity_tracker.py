@@ -8,7 +8,6 @@ from uniswap_v3_backtester.algo.math import compute_token_amounts_from_liquidity
 from uniswap_v3_backtester.algo.pool import Swap, SwapSeries
 
 
-
 def test_is_active_boundaries(position):
     tracker = ActivityTracker(position=position)
     assert tracker.is_active(1000)

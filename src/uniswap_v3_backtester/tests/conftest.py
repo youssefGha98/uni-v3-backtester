@@ -3,7 +3,6 @@ from decimal import Decimal
 
 import pytest
 
-from uniswap_v3_backtester.algo.math import tick_to_sqrt_price
 from uniswap_v3_backtester.algo.pool import Pool, Position, Swap, SwapSeries
 
 

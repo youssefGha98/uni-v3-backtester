@@ -1,6 +1,7 @@
 
 from decimal import Decimal
 
+
 def tick_to_price(tick: int) -> Decimal:
         return Decimal("1.0001") ** tick
 

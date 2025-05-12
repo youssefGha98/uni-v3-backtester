@@ -1,11 +1,8 @@
 from datetime import datetime
 from decimal import Decimal
 
-import pytest
-
 from uniswap_v3_backtester.algo.fees import FeeCalculator
 from uniswap_v3_backtester.algo.pool import Position, Swap, SwapSeries
-
 
 
 def make_test_swap(tick: int) -> Swap:

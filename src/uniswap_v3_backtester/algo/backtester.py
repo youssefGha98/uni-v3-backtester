@@ -1,15 +1,23 @@
 from datetime import datetime
 from decimal import Decimal
 from typing import List, Tuple
+
 from pydantic import BaseModel, ConfigDict
 
+from uniswap_v3_backtester.algo.activity import ActivityTimeseries, ActivityTracker
+from uniswap_v3_backtester.algo.apr import APRTimeseries, APRTracker
+from uniswap_v3_backtester.algo.fees import FeeCalculator, FeeTimeseries
+from uniswap_v3_backtester.algo.Impermanent_Loss import (
+    ILTimeseries,
+    ImpermanentLossTracker,
+)
 from uniswap_v3_backtester.algo.math import compute_token1_for_fixed_token0
 from uniswap_v3_backtester.algo.pool import Position, Swap, SwapSeries
-from uniswap_v3_backtester.algo.activity import ActivityTracker, ActivityTimeseries
-from uniswap_v3_backtester.algo.fees import FeeCalculator, FeeTimeseries
-from uniswap_v3_backtester.algo.Impermanent_Loss import ImpermanentLossTracker, ILTimeseries
-from uniswap_v3_backtester.algo.apr import APRTracker, APRTimeseries
-from uniswap_v3_backtester.algo.rebalancer import RebalanceEvent, RebalancerContext, RebalancingStrategy
+from uniswap_v3_backtester.algo.rebalancer import (
+    RebalanceEvent,
+    RebalancerContext,
+    RebalancingStrategy,
+)
 
 
 class PositionSimulationContext(BaseModel):
@@ -112,8 +120,6 @@ class GlobalClockBacktestRunner:
 
             if rebalancer.should_rebalance(rebalance_context):
                 new_lower, new_upper = rebalancer.rebalance(rebalance_context, bias=0.5)
-                width = new_upper - new_lower
-
                 # Recompute position
                 L, new_amount1 = compute_token1_for_fixed_token0(position.amount0, new_lower, new_upper, swap.tick)
 
@@ -142,7 +148,6 @@ class GlobalClockBacktestRunner:
         self.tick_contexts[i][timestamp] = swap.tick
 
         if apr_tracker:
-            latest_fee = calculator._fees[-1]
             apr_tracker.track(
                 timestamp=swap.timestamp,
                 token0=position.amount0,

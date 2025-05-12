@@ -4,7 +4,6 @@ from decimal import Decimal
 from pydantic import BaseModel
 
 
-
 class Pool(BaseModel):
     address: str
     token0: str

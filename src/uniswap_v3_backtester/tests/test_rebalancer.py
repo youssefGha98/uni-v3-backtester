@@ -2,9 +2,16 @@ from datetime import datetime, timedelta
 
 import pytest
 
-from uniswap_v3_backtester.algo.rebalancer import LogicMode, MultiConditionRebalancer, OutOfRangeDurationRebalancer, OutOfRangeRebalancer, RebalancerContext, RebalancingStrategy, TimeTriggeredRebalancer, compute_tick_range
-
-
+from uniswap_v3_backtester.algo.rebalancer import (
+    LogicMode,
+    MultiConditionRebalancer,
+    OutOfRangeDurationRebalancer,
+    OutOfRangeRebalancer,
+    RebalancerContext,
+    RebalancingStrategy,
+    TimeTriggeredRebalancer,
+    compute_tick_range,
+)
 
 now = datetime.now()
 

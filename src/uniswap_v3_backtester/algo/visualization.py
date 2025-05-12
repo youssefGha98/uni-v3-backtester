@@ -1,5 +1,7 @@
 from matplotlib import pyplot as plt
+
 from uniswap_v3_backtester.algo.backtester import BacktestResult
+
 
 def plot_position_evolution(result: BacktestResult) -> None:
     # Unpack token balances

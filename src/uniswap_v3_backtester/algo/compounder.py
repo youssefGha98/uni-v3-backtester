@@ -9,7 +9,6 @@ from uniswap_v3_backtester.algo.fees import Fee
 from uniswap_v3_backtester.algo.pool import Position
 
 
-
 class LogicMode(Enum):
     AND = "and"
     OR = "or"

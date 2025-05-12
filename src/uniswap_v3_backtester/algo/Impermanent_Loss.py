@@ -1,9 +1,13 @@
 
 from datetime import datetime
 from decimal import Decimal
+
 from pydantic import BaseModel
 
-from uniswap_v3_backtester.algo.math import compute_impermanent_loss, compute_realized_il
+from uniswap_v3_backtester.algo.math import (
+    compute_impermanent_loss,
+    compute_realized_il,
+)
 
 
 class ILTimeseries(BaseModel):

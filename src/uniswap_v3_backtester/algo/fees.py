@@ -2,6 +2,7 @@
 
 from datetime import datetime
 from decimal import Decimal
+
 from pydantic import BaseModel
 
 from uniswap_v3_backtester.algo.pool import Position, Swap
