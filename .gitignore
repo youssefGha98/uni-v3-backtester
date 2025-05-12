@@ -1,0 +1,64 @@
+# Python bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment
+.venv/
+env/
+venv/
+ENV/
+
+# VS Code settings
+.vscode/
+
+# macOS
+.DS_Store
+
+# Jupyter Notebooks
+.ipynb_checkpoints/
+notebooks/__checkpoints__/
+
+# Logs and debug
+*.log
+*.out
+
+# Unit test / coverage
+htmlcov/
+.tox/
+.nox/
+.coverage
+coverage.xml
+.cache
+pytest_cache/
+
+# Temporary files
+*.tmp
+*.swp
+*.bak
+*.orig
+
+# SQLite or other local DB
+*.sqlite3
+*.db
+
+# Package distribution
+dist/
+build/
+*.egg-info/
+
+# Local data and secrets
+data/
+secrets/
+.env
+.env.*
+
+# MyPy and pyright
+.mypy_cache/
+.pyright/
+.dmypy.json
+.pyre/
+
+# System-specific files
+Thumbs.db
+.env

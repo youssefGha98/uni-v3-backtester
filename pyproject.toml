@@ -1,0 +1,32 @@
+[project]
+name = "uniswap-v3-backtester"
+version = "0.1.0"
+description = "Add your description here"
+authors = [
+    { name = "youssefGha98", email = "youssef@nomiks.io" }
+]
+dependencies = [
+    "pydantic>=2.11.4",
+    "sqlalchemy>=2.0.40",
+    "dotenv>=0.9.9",
+    "ipykernel>=6.29.5",
+    "psycopg>=3.2.8",
+    "matplotlib>=3.10.3",
+    "pytest>=8.3.5",
+]
+readme = "README.md"
+requires-python = ">= 3.8"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.rye]
+managed = true
+dev-dependencies = []
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/uniswap_v3_backtester"]
